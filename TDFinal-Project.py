@@ -117,14 +117,14 @@ planet_image_paths = {
     "Saturn": r"C:\Users\TUF\OneDrive\Desktop\project TD\saturn1.gif",
     "Uranus": r"C:\Users\TUF\OneDrive\Desktop\project TD\uranus1.gif",
     "Neptune": r"C:\Users\TUF\OneDrive\Desktop\project TD\neptune1.gif",
-    "Moon": "moon.gif",
-    "Phobos": "phobos.gif",
-    "Deimos": "deimos.gif",
-    "Io": "io.gif",
-    "Europa": "europa.gif",
-    "Ganymede": "ganymede.gif",
-    "Callisto": "callisto.gif",
-    "Titan": "titan.gif",
+    "Moon": r"C:\Users\TUF\OneDrive\Desktop\project TD\Mercury1.gif",
+    "Phobos": r"C:\Users\TUF\OneDrive\Desktop\project TD\phobos.gif",
+    "Deimos": r"C:\Users\TUF\OneDrive\Desktop\project TD\Deimos.gif",
+    "Io": r"C:\Users\TUF\OneDrive\Desktop\project TD\IO.gif",
+    "Europa": r"C:\Users\TUF\OneDrive\Desktop\project TD\europa.gif",
+    "Ganymede": r"C:\Users\TUF\OneDrive\Desktop\project TD\Ganymede.gif",
+    "Callisto": r"C:\Users\TUF\OneDrive\Desktop\project TD\Callisto.gif",
+    "Titan": r"C:\Users\TUF\OneDrive\Desktop\project TD\titan.gif",
 }
 planet_images = {}
 
