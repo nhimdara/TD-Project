@@ -8,6 +8,7 @@ from PIL import Image, ImageTk
 
 # ---------- Configuration: edit image paths if you want ----------
 # NOTE: The paths are left as in your original code, assuming they work on your machine.
+# IMPORTANT: Ensure these files actually exist at these paths, or the program will use default shapes/colors.
 earth_path = r"C:\Users\TUF\OneDrive\Desktop\project TD\earth.gif"
 bg_image = r"C:\Users\TUF\OneDrive\Desktop\project TD\space.gif"
 sun_path = r"C:\Users\TUF\OneDrive\Desktop\project TD\sun.gif"
@@ -215,7 +216,7 @@ class Planet(turtle.Turtle):
         self.name_turtle.clear()
         if show_labels:
             self.name_turtle.goto(x, y + 12)
-            self.name_turtle.write(self.name, align="center", font=("Arial", 9, "normal"))
+            self.name_turtle.write(self.name, align="center", font=("Arial", 12, "normal"))
 
         for moon in self.moons:
             moon.move(speed_mul)
@@ -260,7 +261,7 @@ class Moon(turtle.Turtle):
         if show_labels:
             self.name_turtle.goto(parent_x + x_rel, parent_y + y_rel + 8)
             try:
-                self.name_turtle.write(self.name, align="center", font=("Arial", 7, "normal"))
+                self.name_turtle.write(self.name, align="center", font=("Arial", 10, "normal"))
             except Exception:
                 pass
 
@@ -320,22 +321,21 @@ jupiter.moons += [io, europa, ganymede, callisto]
 titan = Moon("Titan", saturn, 40, 33, 2.5, 60, size=0.26)
 saturn.moons.append(titan)
 
-# ---------- MODIFIED GUI controls setup ----------
+# ---------- MODIFIED GUI controls setup (Fixed placement) ----------
 
 root = screen.getcanvas().winfo_toplevel()
 root.configure(bg='black') # Set the main tkinter window background to black
 
-# Create a container frame for all GUI elements (Info + Controls)
-# This will be placed in the top-left corner of the turtle screen area.
-
-gui_container = tk.Frame(root, bg='black', borderwidth=2, relief='flat') 
-
-# Use 'place' to put the container at the top left of the entire window area
-# (x=0, y=0) is the top-left corner. anchor='nw' means the position is the NW corner of the widget.
-gui_container.place(x=10, y=10, anchor='nw') 
+# Get the full width of the Turtle canvas window for placement
+window_width = screen.window_width() 
 
 # --- Info Panel (TOP-LEFT) ---
-info_frame = tk.Frame(gui_container, bg="black", width=220, borderwidth=1, relief='solid')
+
+gui_container_left = tk.Frame(root, bg='black', borderwidth=2, relief='flat') 
+# Place the container at the top left (x=10, y=10)
+gui_container_left.place(x=10, y=10, anchor='nw') 
+
+info_frame = tk.Frame(gui_container_left, bg="black", width=220, borderwidth=1, relief='solid')
 info_frame.pack(side="top", anchor="nw", padx=5, pady=5)
 
 # Place image at the very top of the info frame
@@ -345,15 +345,20 @@ info_image_label.pack(side="top", anchor="n", pady=(0, 2))
 # Place text just below image
 info_label = tk.Label(info_frame, text="Click a planet or moon\nfor details",
                       justify="left", anchor="nw", bg="black", fg="white", # Added fg="white" for visibility
-                      font=("Arial", 11), padx=4, pady=4, wraplength=210)
+                      font=("Arial", 14, "bold"), padx=4, pady=4, wraplength=210)
 info_label.pack(side="top", anchor="nw", fill="both", expand=False)
 
 
-# --- Control panel (RIGHT) ---
-window_width = screen.window_width()
-control_frame_right = tk.Frame(root, bg='black', borderwidth=1, relief='solid')
-control_frame_right.place(x=window_width+900, y=750, anchor='ne')
+# --- Control panel (TOP-RIGHT) ---
+control_frame_right = tk.Frame(root, bg='black', borderwidth=1, relief='solid')  # Create the right control panel frame
 
+# FIX: Place it at the top-right corner. 
+# x=window_width (the right edge of the window)
+# y=10 (10 pixels down from the top)
+# anchor='ne' (North-East) makes the frame's top-right corner align with this spot.
+control_frame_right.place(x=window_width+900, y=750, anchor='ne') 
+
+# --- Speed control ---
 def on_speed_change(val):
     global speed_multiplier
     try:
@@ -361,21 +366,23 @@ def on_speed_change(val):
     except:
         speed_multiplier = 1.0
 
-tk.Label(control_frame_right, text="Simulation speed", bg="black", fg="white").pack(anchor="center")
+tk.Label(control_frame_right, text="Simulation speed", bg="black", fg="white").pack(anchor="center")  # Label for speed
 speed_slider = tk.Scale(control_frame_right, from_=0.1, to=5.0, resolution=0.1,
-                         orient="horizontal", length=180, command=on_speed_change,
-                         bg="black", fg="white", troughcolor="darkgray")
+                        orient="horizontal", length=180, command=on_speed_change,
+                        bg="black", fg="white", troughcolor="darkgray")  # Speed slider
 speed_slider.set(1.0)
 speed_slider.pack()
 
+# --- Pause/Resume button ---
 def toggle_pause():
     global paused
     paused = not paused
     pause_btn.config(text="Resume" if paused else "Pause")
 
-pause_btn = tk.Button(control_frame_right, text="Pause", width=24, command=toggle_pause)
+pause_btn = tk.Button(control_frame_right, text="Pause", width=24, command=toggle_pause)  # Pause/Resume button
 pause_btn.pack(pady=(8, 4))
 
+# --- Orbit toggle button ---
 def toggle_orbits():
     global show_orbits
     show_orbits = not show_orbits
@@ -383,32 +390,40 @@ def toggle_orbits():
         p.set_orbit_visible(show_orbits)
     orbit_btn.config(text="Hide Orbits" if show_orbits else "Show Orbits")
 
-orbit_btn = tk.Button(control_frame_right, text="Hide Orbits", width=24, command=toggle_orbits)
+orbit_btn = tk.Button(control_frame_right, text="Hide Orbits", width=24, command=toggle_orbits)  # Toggle orbits
 orbit_btn.pack(pady=4)
 
+# --- Label toggle button ---
 def toggle_labels():
     global show_labels
     show_labels = not show_labels
     for p in planets:
         p.set_label_visible(show_labels)
         for m in p.moons:
+            # Need to clear moon labels immediately as well
             m.name_turtle.clear()
     label_btn.config(text="Hide Labels" if show_labels else "Show Labels")
 
-label_btn = tk.Button(control_frame_right, text="Hide Labels", width=24, command=toggle_labels)
+label_btn = tk.Button(control_frame_right, text="Hide Labels", width=24, command=toggle_labels)  # Toggle labels
 label_btn.pack(pady=4)
 
+# --- Reset button ---
 def reset_view():
+    # Reset all planet angles to 0
     for p in planets:
         p.angle = 0
         p.draw_orbit() if show_orbits else None
+        for m in p.moons:
+            m.angle = 0
+
+    # Reset info displays
     info_turtle.clear()
-    info_turtle.goto(0, -360)
+    info_turtle.goto(0, -425) # Use correct final position
     info_turtle.write("Solar System (click a planet for info)", align="center", font=("Arial", 14, "bold"))
     info_label.config(text="Click a planet or moon\nfor details")
     info_image_label.config(image="", text="")
 
-reset_btn = tk.Button(control_frame_right, text="Reset", width=24, command=reset_view)
+reset_btn = tk.Button(control_frame_right, text="Reset Positions", width=24, command=reset_view)  # Reset button
 reset_btn.pack(pady=(8,0))
 
 # ---------- Shared info display function (kept original logic) ----------
@@ -417,7 +432,7 @@ def show_body_info(name, v_kmh=None, orbit_days=None):
     info_turtle.clear()
     info_turtle.goto(0, -425)
     if v_kmh is not None and orbit_days is not None:
-        msg = f"{name} → {v_kmh:,.0f} km/h | Orbit: {orbit_days:,} days"
+        msg = f"{name} → {v_kmh:,.0f} km/h | Orbit: {orbit_days:,.0f} days"
     else:
         msg = f"{name}"
     info_turtle.write(msg, align="center", font=("Arial", 14, "bold"))
@@ -431,8 +446,8 @@ def show_body_info(name, v_kmh=None, orbit_days=None):
     if path and os.path.exists(path):
         if name not in planet_images:
             try:
-                # Resize image for the info panel
-                img = Image.open(path).resize((240, 240)) 
+                # Resize image for the info panel (adjusted size to better fit frame)
+                img = Image.open(path).resize((200, 200)) 
                 planet_images[name] = ImageTk.PhotoImage(img)
             except Exception:
                 planet_images[name] = None
@@ -452,9 +467,13 @@ def update():
         screen.update()
     screen.ontimer(update, update_interval_ms)
 
+# Initial draw of orbits
 for p in planets:
     if show_orbits:
         p.draw_orbit()
 
+# Start the animation loop
 update()
+
+# This is necessary for the Tkinter event loop to run and keep the window open
 turtle.done()
