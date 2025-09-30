@@ -7,6 +7,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 
 # ---------- Configuration: edit image paths if you want ----------
+# NOTE: The paths are left as in your original code, assuming they work on your machine.
 earth_path = r"C:\Users\TUF\OneDrive\Desktop\project TD\earth.gif"
 bg_image = r"C:\Users\TUF\OneDrive\Desktop\project TD\space.gif"
 sun_path = r"C:\Users\TUF\OneDrive\Desktop\project TD\sun.gif"
@@ -21,7 +22,7 @@ neptune_path = r"C:\Users\TUF\OneDrive\Desktop\project TD\neptune.gif"
 
 # Set up the screen
 screen = turtle.Screen()
-screen.setup(width=1000, height=800)
+screen.setup(width=1000, height=800) # Window size 1000x800
 screen.bgcolor("black")
 screen.title("Solar System Simulation with Elliptical Orbits & Moons")
 screen.tracer(0)
@@ -73,6 +74,8 @@ def draw_stars(n=120):
     for _ in range(n):
         x = random.randint(-screen_x, screen_x)
         y = random.randint(-screen_y, screen_y)
+        # Use a slightly darker color for stars to distinguish from labels/info
+        star_t.color(random.choice(["darkgray", "lightgray", "white"])) 
         star_t.goto(x, y)
         star_t.dot(random.choice([1, 2, 2, 3]))
     star_t.hideturtle()
@@ -128,7 +131,7 @@ planet_image_paths = {
 }
 planet_images = {}
 
-# ---------- Classes ----------
+# ---------- Classes (kept original) ----------
 class Planet(turtle.Turtle):
     def __init__(self, name, color, semi_major_axis, semi_minor_axis,
                  sim_speed_deg_per_step, angle_offset, image,
@@ -143,6 +146,7 @@ class Planet(turtle.Turtle):
         self.orbit_days = orbit_days
 
         if self.real_a_km is not None and self.orbit_days is not None:
+            # Calculate average orbital speed in km/h
             self.v_kmh = (2 * math.pi * self.real_a_km) / (self.orbit_days * 24.0)
         else:
             self.v_kmh = None
@@ -152,7 +156,7 @@ class Planet(turtle.Turtle):
         except Exception:
             self.shape("circle")
             self.shapesize(0.6)
-        self.color(color)
+            self.color(color)
         self.penup()
         self.speed(0)
         self.showturtle()
@@ -172,7 +176,7 @@ class Planet(turtle.Turtle):
             self.draw_orbit()
 
         self.moons = []
-        # self.onclick(self.show_info)
+        # Update onclick to use the function defined later
         self.onclick(lambda x, y: show_body_info(self.name, self.v_kmh, self.orbit_days))
 
     def draw_orbit(self):
@@ -288,7 +292,7 @@ sun.goto(0, 0)
 sun.showturtle()
 
 # ---------- Create planets ----------
-mercury = Planet("Mercury", "gray",     60,  42, 4.4,   0,  mercury_path, *A["Mercury"])
+mercury = Planet("Mercury", "gray",     60,  42, 4.4,    0,  mercury_path, *A["Mercury"])
 venus   = Planet("Venus",   "orange",   95,  70, 3.5,  45,  venus_path,   *A["Venus"])
 earth   = Planet("Earth",   "green",   140, 105, 2.8,  90,  earth_path,   *A["Earth"])
 mars    = Planet("Mars",    "red",     190, 145, 2.4, 135,  mars_path,    *A["Mars"])
@@ -299,7 +303,7 @@ neptune = Planet("Neptune", "blue",    470, 360, 0.9, 315,  neptune_path, *A["Ne
 
 planets = [mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
 
-# ---------- Add moons ----------
+# ---------- Add moons (kept original) ----------
 earth_moon = Moon("Moon", earth, 20, 16, 8.0, 0, size=0.35)
 earth.moons.append(earth_moon)
 
@@ -316,24 +320,35 @@ jupiter.moons += [io, europa, ganymede, callisto]
 titan = Moon("Titan", saturn, 40, 33, 2.5, 60, size=0.26)
 saturn.moons.append(titan)
 
-# ---------- GUI controls ----------
+# ---------- MODIFIED GUI controls setup ----------
+
 root = screen.getcanvas().winfo_toplevel()
+root.configure(bg='black') # Set the main tkinter window background to black
 
-# Info panel (LEFT)
-info_frame = tk.Frame(root, bg="white", width=200, height=600)
-info_frame.pack(side="left", anchor="n", padx=6, pady=6, fill="y")
+# Create a container frame for all GUI elements (Info + Controls)
+# This will be placed in the top-left corner of the turtle screen area.
+gui_container = tk.Frame(root, bg='black', borderwidth=2, relief='flat') 
+# Use 'place' to put the container at the top left of the entire window area
+# (x=0, y=0) is the top-left corner. anchor='nw' means the position is the NW corner of the widget.
+gui_container.place(x=0, y=0, anchor='nw') 
 
-info_image_label = tk.Label(info_frame, bg="white")
-info_image_label.pack(pady=(10, 5))
+# --- Info Panel (TOP-LEFT) ---
+info_frame = tk.Frame(gui_container, bg="black", width=220, borderwidth=1, relief='solid')
+info_frame.pack(side="top", anchor="nw", padx=5, pady=5)
 
+# Place image at the very top of the info frame
+info_image_label = tk.Label(info_frame, bg="black")
+info_image_label.pack(side="top", anchor="n", pady=(0, 2))
+
+# Place text just below image
 info_label = tk.Label(info_frame, text="Click a planet or moon\nfor details",
-                      justify="left", anchor="nw", bg="white",
-                      font=("Arial", 11), padx=8, pady=8, wraplength=180)
-info_label.pack(fill="both", expand=True)
+                      justify="left", anchor="nw", bg="black", fg="white", # Added fg="white" for visibility
+                      font=("Arial", 11), padx=4, pady=4, wraplength=210)
+info_label.pack(side="top", anchor="nw", fill="both", expand=False)
 
-# Control panel (RIGHT)
-control_frame = tk.Frame(root)
-control_frame.pack(side="right", anchor="n", padx=6, pady=6)
+# --- Control panel (Below Info Panel) ---
+control_frame = tk.Frame(gui_container, bg='black', borderwidth=1, relief='solid')
+control_frame.pack(side="top", anchor="nw", padx=5, pady=(2, 5))
 
 def on_speed_change(val):
     global speed_multiplier
@@ -342,9 +357,10 @@ def on_speed_change(val):
     except:
         speed_multiplier = 1.0
 
-tk.Label(control_frame, text="Simulation speed").pack(anchor="center")
+tk.Label(control_frame, text="Simulation speed", bg="black", fg="white").pack(anchor="center")
 speed_slider = tk.Scale(control_frame, from_=0.1, to=5.0, resolution=0.1,
-                        orient="horizontal", length=180, command=on_speed_change)
+                         orient="horizontal", length=180, command=on_speed_change,
+                         bg="black", fg="white", troughcolor="darkgray") # Added colors
 speed_slider.set(1.0)
 speed_slider.pack()
 
@@ -385,12 +401,15 @@ def reset_view():
     info_turtle.clear()
     info_turtle.goto(0, -360)
     info_turtle.write("Solar System (click a planet for info)", align="center", font=("Arial", 14, "bold"))
-    info_label.config(text="Click a planet\nfor details")
+    
+    # Reset Info panel
+    info_label.config(text="Click a planet or moon\nfor details")
+    info_image_label.config(image="", text="")
 
 reset_btn = tk.Button(control_frame, text="Reset", width=12, command=reset_view)
 reset_btn.pack(pady=(8,0))
 
-# ---------- Shared info display function ----------
+# ---------- Shared info display function (kept original logic) ----------
 def show_body_info(name, v_kmh=None, orbit_days=None):
     # bottom text
     info_turtle.clear()
@@ -410,19 +429,20 @@ def show_body_info(name, v_kmh=None, orbit_days=None):
     if path and os.path.exists(path):
         if name not in planet_images:
             try:
-                img = Image.open(path).resize((120, 120))
+                # Resize image for the info panel
+                img = Image.open(path).resize((240, 240)) 
                 planet_images[name] = ImageTk.PhotoImage(img)
             except Exception:
                 planet_images[name] = None
         if planet_images[name]:
             info_image_label.config(image=planet_images[name], text="")
-            info_image_label.image = planet_images[name]
+            info_image_label.image = planet_images[name] # Keep a reference
         else:
-            info_image_label.config(image="", text=f"[No image for {name}]")
+            info_image_label.config(image="", text=f"[No image for {name}]", bg="black", fg="white")
     else:
-        info_image_label.config(image="", text=f"[No image for {name}]")
+        info_image_label.config(image="", text=f"[No image for {name}]", bg="black", fg="white")
 
-# ---------- animation update ----------
+# ---------- animation update (kept original) ----------
 def update():
     if not paused:
         for p in planets:
