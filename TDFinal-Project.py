@@ -87,7 +87,7 @@ info_turtle = turtle.Turtle()
 info_turtle.hideturtle()
 info_turtle.penup()
 info_turtle.color("white")
-info_turtle.goto(0, -360)
+info_turtle.goto(0, -425)
 info_turtle.write("Solar System (click a planet for info)", align="center", font=("Arial", 14, "bold"))
 
 # ---------- Details dictionary (extended) ----------
@@ -327,10 +327,12 @@ root.configure(bg='black') # Set the main tkinter window background to black
 
 # Create a container frame for all GUI elements (Info + Controls)
 # This will be placed in the top-left corner of the turtle screen area.
+
 gui_container = tk.Frame(root, bg='black', borderwidth=2, relief='flat') 
+
 # Use 'place' to put the container at the top left of the entire window area
 # (x=0, y=0) is the top-left corner. anchor='nw' means the position is the NW corner of the widget.
-gui_container.place(x=0, y=0, anchor='nw') 
+gui_container.place(x=10, y=10, anchor='nw') 
 
 # --- Info Panel (TOP-LEFT) ---
 info_frame = tk.Frame(gui_container, bg="black", width=220, borderwidth=1, relief='solid')
@@ -346,9 +348,11 @@ info_label = tk.Label(info_frame, text="Click a planet or moon\nfor details",
                       font=("Arial", 11), padx=4, pady=4, wraplength=210)
 info_label.pack(side="top", anchor="nw", fill="both", expand=False)
 
-# --- Control panel (Below Info Panel) ---
-control_frame = tk.Frame(gui_container, bg='black', borderwidth=1, relief='solid')
-control_frame.pack(side="top", anchor="nw", padx=5, pady=(2, 5))
+
+# --- Control panel (RIGHT) ---
+window_width = screen.window_width()
+control_frame_right = tk.Frame(root, bg='black', borderwidth=1, relief='solid')
+control_frame_right.place(x=window_width+900, y=750, anchor='ne')
 
 def on_speed_change(val):
     global speed_multiplier
@@ -357,10 +361,10 @@ def on_speed_change(val):
     except:
         speed_multiplier = 1.0
 
-tk.Label(control_frame, text="Simulation speed", bg="black", fg="white").pack(anchor="center")
-speed_slider = tk.Scale(control_frame, from_=0.1, to=5.0, resolution=0.1,
+tk.Label(control_frame_right, text="Simulation speed", bg="black", fg="white").pack(anchor="center")
+speed_slider = tk.Scale(control_frame_right, from_=0.1, to=5.0, resolution=0.1,
                          orient="horizontal", length=180, command=on_speed_change,
-                         bg="black", fg="white", troughcolor="darkgray") # Added colors
+                         bg="black", fg="white", troughcolor="darkgray")
 speed_slider.set(1.0)
 speed_slider.pack()
 
@@ -369,7 +373,7 @@ def toggle_pause():
     paused = not paused
     pause_btn.config(text="Resume" if paused else "Pause")
 
-pause_btn = tk.Button(control_frame, text="Pause", width=12, command=toggle_pause)
+pause_btn = tk.Button(control_frame_right, text="Pause", width=24, command=toggle_pause)
 pause_btn.pack(pady=(8, 4))
 
 def toggle_orbits():
@@ -379,7 +383,7 @@ def toggle_orbits():
         p.set_orbit_visible(show_orbits)
     orbit_btn.config(text="Hide Orbits" if show_orbits else "Show Orbits")
 
-orbit_btn = tk.Button(control_frame, text="Hide Orbits", width=12, command=toggle_orbits)
+orbit_btn = tk.Button(control_frame_right, text="Hide Orbits", width=24, command=toggle_orbits)
 orbit_btn.pack(pady=4)
 
 def toggle_labels():
@@ -391,7 +395,7 @@ def toggle_labels():
             m.name_turtle.clear()
     label_btn.config(text="Hide Labels" if show_labels else "Show Labels")
 
-label_btn = tk.Button(control_frame, text="Hide Labels", width=12, command=toggle_labels)
+label_btn = tk.Button(control_frame_right, text="Hide Labels", width=24, command=toggle_labels)
 label_btn.pack(pady=4)
 
 def reset_view():
@@ -401,19 +405,17 @@ def reset_view():
     info_turtle.clear()
     info_turtle.goto(0, -360)
     info_turtle.write("Solar System (click a planet for info)", align="center", font=("Arial", 14, "bold"))
-    
-    # Reset Info panel
     info_label.config(text="Click a planet or moon\nfor details")
     info_image_label.config(image="", text="")
 
-reset_btn = tk.Button(control_frame, text="Reset", width=12, command=reset_view)
+reset_btn = tk.Button(control_frame_right, text="Reset", width=24, command=reset_view)
 reset_btn.pack(pady=(8,0))
 
 # ---------- Shared info display function (kept original logic) ----------
 def show_body_info(name, v_kmh=None, orbit_days=None):
     # bottom text
     info_turtle.clear()
-    info_turtle.goto(0, -360)
+    info_turtle.goto(0, -425)
     if v_kmh is not None and orbit_days is not None:
         msg = f"{name} → {v_kmh:,.0f} km/h | Orbit: {orbit_days:,} days"
     else:
